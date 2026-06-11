@@ -1,0 +1,11 @@
+{
+  "model": "Unknown_Model",
+  "pins": [
+    "VCC",
+    "SCL",
+    "SDA",
+    "NC",
+    "GND",
+    "GND"
+  ]
+}

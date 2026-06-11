@@ -1,10 +1,6 @@
 #include "SBS.h"
 
-SBS::commandSet commands[38];
-uint8_t smbusAddress;
-
-
-SBS::SBS(uint8_t address, char sda, char scl) {
+SBS::SBS(uint8_t address, int sda, int scl) {
   //              Slave Function        Address,Writable?, byte count
   commands[0]  = {"ManufacturerAccess",     0x00, true,  1, "word"};
   commands[1]  = {"RemainingCapacityAlarm", 0x01, true,  2, "mAh"};
@@ -54,42 +50,64 @@ SBS::SBS(uint8_t address, char sda, char scl) {
 }
 
 byte SBS::sbsReadByte(uint8_t command) {
-  byte b;
+  byte b = 0;
   Wire.beginTransmission(smbusAddress);
   Wire.write(command);
   if(Wire.endTransmission(false) == 0) {
-    Wire.requestFrom(smbusAddress, 1, true);
-    b = Wire.read();
-    return b;
+    Wire.requestFrom((int)smbusAddress, 1, (int)true);
+    if(Wire.available()) {
+      b = Wire.read();
+    }
+  }
+  return b;
+}
+
+uint16_t SBS::sbsReadWord(uint8_t command) {
+  uint16_t b1 = 0, b2 = 0;
+  Wire.beginTransmission(smbusAddress);
+  Wire.write(command);
+  if(Wire.endTransmission(false) == 0) {
+    Wire.requestFrom((int)smbusAddress, 2, (int)true);
+    if(Wire.available() >= 2) {
+      b1 = Wire.read();
+      b2 = Wire.read();
+      return b1 | (b2 << 8);
+    }
   }
   return 0;
 }
 
-short SBS::sbsReadInt(uint8_t command) {
-  uint8_t b1, b2;
-  Wire.beginTransmission(smbusAddress);
-  Wire.write(command);
-  if(Wire.endTransmission(false) == 0) {
-    Wire.requestFrom(smbusAddress, 2, true);
-    b1 = Wire.read();
-    b2 = Wire.read();
-    return b1 | (b2 << 8);
-  }
-  return 0;
+int16_t SBS::sbsReadInt(uint8_t command) {
+  return (int16_t)sbsReadWord(command);
 }
 
 void SBS::sbsReadString(char str[], uint8_t command) {
-  str[0] = (char)0;
-  int n;
+  str[0] = 0;
+  int n = 0;
   Wire.beginTransmission(smbusAddress);
   Wire.write(command);
   if(Wire.endTransmission(false) == 0) {
-    Wire.requestFrom(smbusAddress, 33, true); //hack, instead of 1, request max char[] size per docs
-    n = Wire.read();
-	//Wire.requestFrom(smbusAddress, n, false); //broken, not sure why
-	for(int i = 0; i < n; i++)
-	  str[i] = (char)Wire.read();
-    str[n] = (char)0;
+    Wire.requestFrom((int)smbusAddress, 33, (int)true); // request max possible size (32 + 1 length byte)
+    if(Wire.available()) {
+      n = Wire.read(); // SMBus string read sends length as first byte
+      if(n > 32) n = 32; // prevent buffer overflow
+      for(int i = 0; i < n; i++) {
+        if(Wire.available()) {
+          str[i] = (char)Wire.read();
+        } else {
+          n = i; // stop if no more data
+          break;
+        }
+      }
+      str[n] = 0; // null terminate
+    }
   }
 }
 
+void SBS::sbsWriteWord(uint8_t command, uint16_t data) {
+  Wire.beginTransmission(smbusAddress);
+  Wire.write(command);
+  Wire.write(data & 0xFF);         // Lower byte first for SBS Word Protocol
+  Wire.write((data >> 8) & 0xFF);  // Upper byte second
+  Wire.endTransmission();
+}

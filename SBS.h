@@ -9,26 +9,23 @@
 
 class SBS {
 public:
-  struct commandSet{
-    String slaveFunction;
+  struct commandSet {
+    const char* slaveFunction;
     uint8_t code;
     bool writeable;
-    int bytes; //make enum
-    String type;
+    int bytes;
+    const char* type;
   } commands[38];
   
-  /* enum type : uint8_t {
-    a = 1,
-    b = 2
-  };
- */
-  SBS(uint8_t address, char sda, char scl);
+  SBS(uint8_t address, int sda, int scl);
   byte sbsReadByte(uint8_t command);
-  short sbsReadInt(uint8_t command);
-  uint8_t sbsReadStringSize(uint8_t command);
+  uint16_t sbsReadWord(uint8_t command);
+  int16_t sbsReadInt(uint8_t command);
   void sbsReadString(char str[], uint8_t command);
-private:
-};
+  void sbsWriteWord(uint8_t command, uint16_t data);
 
+private:
+  uint8_t smbusAddress;
+};
 
 #endif

@@ -1,0 +1,11 @@
+{
+  "model": "hpjc04",
+  "pins": [
+    "VCC",
+    "SCL",
+    "SDA",
+    "NC",
+    "GND",
+    "GND"
+  ]
+}

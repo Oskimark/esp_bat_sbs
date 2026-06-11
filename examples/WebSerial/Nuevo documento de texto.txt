@@ -1,0 +1,1 @@
+en la tarjeta que dice "Typical Battery Connector Reference" y se muestra un pinout. quiero qeu ESE sea editable. seleccionando la cantidad de pines. y las etiquetas de cada uno , pudiendo guardarse enun archivo local al igual qeu el log. 
