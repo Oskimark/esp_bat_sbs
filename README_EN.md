@@ -4,7 +4,7 @@ This library allows an ESP8266 (or ESP32) to read data from Smart Battery System
 
 This version has been heavily optimized for microcontroller memory and adapted for modern workshop use!
 
-## 🔧 Hardware Setup (Pinout)
+##  Hardware Setup (Pinout)
 
 Most laptop batteries use a standard SMBus/I2C interface. You will typically find 5 to 9 pins on the battery connector. The most common standard is:
 1. **VCC (+) / BAT+**: Usually multiple pins tied together at one end.
@@ -19,9 +19,9 @@ Most laptop batteries use a standard SMBus/I2C interface. You will typically fin
 * ESP `GND` -> Battery `GND`
 * *Note: Do NOT connect the battery VCC directly to the ESP unless you are using a proper step-down regulator, as laptop batteries are often 11.1V to 14.8V!*
 
-> **⚠️ WARNING**: Laptop batteries can deliver extremely high currents. Be careful not to short the pins while probing!
+> ** WARNING**: Laptop batteries can deliver extremely high currents. Be careful not to short the pins while probing (it happens to me)!
 
-## 🚀 Workshop Web App (No Installation Required!)
+##  Workshop Web App (No Installation Required!)
 
 We've included a modern, beautiful **Web App** that connects directly to your ESP8266 via USB (using the Web Serial API). No screen or WiFi setup needed!
 
@@ -37,11 +37,6 @@ To use this library reliably, you may need to reduce the I2C clock speed to that
 Wire.setClockStretchLimit(35000);
 Wire.setClock(40000);
 ```
-*(See https://github.com/esp8266/Arduino/issues/2524 for historical context).*
+
 
 ## TODOs
-* [x] Add GPL License file
-* [x] Fix String memory leaks
-* [x] Add Web App / Workshop UI
-* [x] Add Battery Pinouts
-* [x] Add pictures/diagrams of the setup
