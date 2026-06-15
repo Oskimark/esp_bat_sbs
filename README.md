@@ -1,47 +1,50 @@
-# SBS_ESP: Smart Battery System for ESP
+# SBS_ESP: Sistema de Batería Inteligente para ESP
+codigo inicial inspirado fuertemente de https://github.com/teliot/SBS
+Esta librería permite que un ESP8266 (o ESP32) lea datos de baterías compatibles con el estándar "Smart Battery System" (SBS), que normalmente se encuentran en laptops, drones y otros dispositivos portátiles.
 
-This library allows an ESP8266 (or ESP32) to read data from Smart Battery System (SBS) compliant batteries, typically found in laptops, drones, and other portable devices.
+¡Esta versión ha sido fuertemente optimizada para la memoria del microcontrolador y adaptada para uso moderno en el taller!
 
-This version has been heavily optimized for microcontroller memory and adapted for modern workshop use!
+## 🔧 Configuración de Hardware (Pinout)
 
-## 🔧 Hardware Setup (Pinout)
+La mayoría de las baterías de laptop utilizan una interfaz estándar SMBus/I2C. Normalmente encontrarás de 5 a 9 pines en el conector de la batería. El estándar más común es:
+1. **VCC (+) / BAT+**: Usualmente varios pines unidos en un extremo.
+2. **GND (-) / BAT-**: Usualmente varios pines unidos en el otro extremo.
+3. **SCL (Reloj / Clock)**: Pin de reloj SMBus.
+4. **SDA (Datos / Data)**: Pin de datos SMBus.
+5. **System Present (SysPres/T)**: A menudo necesita estar conectado a GND para despertar la batería y permitir la lectura o descarga.
 
-Most laptop batteries use a standard SMBus/I2C interface. You will typically find 5 to 9 pins on the battery connector. The most common standard is:
-1. **VCC (+) / BAT+**: Usually multiple pins tied together at one end.
-2. **GND (-) / BAT-**: Usually multiple pins tied together at the other end.
-3. **SCL (Clock)**: SMBus Clock pin.
-4. **SDA (Data)**: SMBus Data pin.
-5. **System Present (SysPres/T)**: Often needs to be connected to GND to wake up the battery and enable reading or discharging.
+**Conexión ESP8266 (Ejemplo WebSerial por defecto):**
+* ESP `D1` -> Batería `SCL`
+* ESP `D2` -> Batería `SDA`
+* ESP `GND` -> Batería `GND`
+* *Nota: ¡NO conectes el VCC de la batería directamente al ESP a menos que estés usando un regulador step-down adecuado, ya que las baterías de laptop a menudo tienen entre 11.1V y 14.8V!*
 
-**ESP8266 Connection (Default WebSerial Example):**
-* ESP `D1` -> Battery `SCL`
-* ESP `D2` -> Battery `SDA`
-* ESP `GND` -> Battery `GND`
-* *Note: Do NOT connect the battery VCC directly to the ESP unless you are using a proper step-down regulator, as laptop batteries are often 11.1V to 14.8V!*
+> **⚠️ ADVERTENCIA**: Las baterías de laptop pueden entregar corrientes extremadamente altas. ¡Ten cuidado de no hacer cortocircuito en los pines mientras los mides!
 
-> **⚠️ WARNING**: Laptop batteries can deliver extremely high currents. Be careful not to short the pins while probing!
+## 🚀 Aplicación Web para el Taller (¡Sin Instalación!)
 
-## 🚀 Workshop Web App (No Installation Required!)
+Hemos incluido una **Aplicación Web** moderna y hermosa que se conecta directamente a tu ESP8266 vía USB (usando la API Web Serial). ¡No necesitas pantallas adicionales ni configurar WiFi!
 
-We've included a modern, beautiful **Web App** that connects directly to your ESP8266 via USB (using the Web Serial API). No screen or WiFi setup needed!
+### Cómo usarla:
+1. Abre el sketch `examples/WebSerial/WebSerial.ino` en Arduino IDE y compílalo/súbelo a tu ESP8266.
+2. Abre el archivo `examples/WebSerial/webapp.html` en un navegador moderno (como Google Chrome o Microsoft Edge).
+3. Haz clic en el botón de **Connect**, selecciona el puerto COM de tu ESP, e instantáneamente verás un panel interactivo con la Salud, Estado de Carga (SOC), Voltaje, Corriente, e información del fabricante de tu batería.
 
-### How to use:
-1. Open the `examples/WebSerial/WebSerial.ino` sketch in Arduino IDE and flash it to your ESP8266.
-2. Open `examples/WebSerial/webapp.html` in a modern browser (like Google Chrome or Edge).
-3. Click **Connect to ESP USB**, select your ESP's COM port, and instantly see a beautiful dashboard with your battery's Health, SOC, Voltage, Current, and Manufacturer info!
+### ⚠️ Modo Experto (Programación de Chips)
+Para chips como el **BQ40Z551** de Texas Instruments (Familia Z), la aplicación y el firmware ahora soportan funciones avanzadas. Activa el **Modo Experto** en la interfaz para desbloquear el chip (Unseal), borrar el registro histórico (Lifetime Data Reset) y forzar la reescritura de ciclos de carga enviando de forma segura los comandos MAC necesarios vía hardware.
 
-## Core Library Note
+## Nota de la Librería Principal
 
-To use this library reliably, you may need to reduce the I2C clock speed to that of SMBus. The library does this automatically by calling:
+Para usar esta librería de forma confiable, es posible que necesites reducir la velocidad del reloj I2C a la recomendada por SMBus. La librería maneja esto automáticamente internamente llamando a:
 ```cpp
 Wire.setClockStretchLimit(35000);
 Wire.setClock(40000);
 ```
-*(See https://github.com/esp8266/Arduino/issues/2524 for historical context).*
+*(Ver https://github.com/esp8266/Arduino/issues/2524 para contexto histórico).*
 
-## TODOs
-* [x] Add GPL License file
-* [x] Fix String memory leaks
-* [x] Add Web App / Workshop UI
-* [x] Add Battery Pinouts
-* [x] Add pictures/diagrams of the setup
+## TODOs / Tareas Pendientes
+* [x] Añadir archivo de Licencia GPL
+* [x] Arreglar fugas de memoria con objetos String
+* [x] Añadir Interfaz Gráfica de Taller (Web App local)
+* [x] Añadir guardado de Pinouts 
+* [x] Implementar Desbloqueo y Escritura para BQ40Z551 (Modo Experto)
