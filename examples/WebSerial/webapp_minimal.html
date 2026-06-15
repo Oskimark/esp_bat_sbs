@@ -438,6 +438,8 @@
       border-radius: 4px;
     }
   </style>
+  <script src="lang/en.js"></script>
+  <script src="lang/es.js"></script>
 </head>
 <body>
   <script>
@@ -446,28 +448,36 @@
     if(savedTheme === 'glass') document.body.classList.add('theme-glass');
   </script>
 
-  <h1>Smart Battery Analyzer</h1>
-  <p class="subtitle">Advanced Diagnostics, Live Charting & Logging</p>
+  <h1 data-i18n="app_title">Smart Battery Analyzer</h1>
+  <p class="subtitle" data-i18n="app_subtitle">Advanced Diagnostics, Live Charting & Logging</p>
   
   <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center;">
-    <button id="connectBtn">Connect to ESP USB</button>
-    <button id="setLogDirBtn" class="btn-outline">📁 Select Logging Folder</button>
-    <button id="reportBtn" class="btn-outline">📄 Generate Report</button>
-    <button id="editLayoutBtn" class="btn-outline">🛠️ Edit Layout</button>
+    <button id="connectBtn" data-i18n="btn_connect">Connect to ESP USB</button>
+    <div style="display: flex; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 8px; align-items: center;">
+      <button id="setLogDirBtn" class="btn-outline" data-i18n="btn_set_dir">📁 Select Logging Folder</button>
+      <button id="startLogBtn" class="btn-outline" style="color: var(--success);" disabled data-i18n="btn_start_log">▶️ Start</button>
+      <button id="pauseLogBtn" class="btn-outline" style="color: var(--warning);" disabled data-i18n="btn_pause_log">⏸️ Pause</button>
+      <button id="stopLogBtn" class="btn-outline" style="color: var(--danger);" disabled data-i18n="btn_stop_log">⏹️ Stop</button>
+    </div>
+    <button id="reportBtn" class="btn-outline" data-i18n="btn_report">📄 Generate Report</button>
+    <select id="langSelect" class="btn-outline" style="appearance: none; cursor: pointer; text-align: center; border-color: var(--primary);">
+      <option value="es">🇪🇸 Español</option>
+      <option value="en">🇺🇸 English</option>
+    </select>
     <select id="themeSelect" class="btn-outline" style="appearance: none; cursor: pointer; text-align: center; border-color: var(--secondary);">
       <option value="minimal">Minimal Theme</option>
       <option value="glass">Glass Theme</option>
     </select>
-    <button id="expertModeBtn" class="btn-outline" style="border-color: var(--danger); color: var(--danger);">⚠️ Expert Mode</button>
-    <button id="openCmdBtn" class="btn-outline" style="border-color: var(--warning); color: var(--warning);">📚 BQ4050 Commands</button>
-    <div id="statusBadge" class="status-badge offline">Offline</div>
+    <button id="expertModeBtn" class="btn-outline" style="border-color: var(--danger); color: var(--danger);" data-i18n="btn_expert">⚠️ Expert Mode</button>
+    <button id="openCmdBtn" class="btn-outline" style="border-color: var(--warning); color: var(--warning);" data-i18n="btn_cmd">📚 BQ4050 Commands</button>
+    <div id="statusBadge" class="status-badge offline" data-i18n="status_offline">Offline</div>
   </div>
 
   <div class="dashboard">
     
     <!-- State and SOC -->
     <div class="card" data-id="card-soc">
-      <h3>State of Charge <span id="chargeState" class="status-badge">Idle</span></h3>
+      <h3><span data-i18n="card_soc">State of Charge</span> <span id="chargeState" class="status-badge">Idle</span></h3>
       <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
         <div class="value"><span id="soc">--</span><span class="unit">%</span></div>
         <div class="battery-graphic" style="width: 80px; height: 35px;">
@@ -475,14 +485,14 @@
         </div>
       </div>
       <div style="margin-top: 1rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-        <span>Voltage: <strong id="voltage" style="color:white;">--</strong> V</span>
-        <span>Current: <strong id="current" style="color:white;">--</strong> A</span>
+        <span><span data-i18n="lbl_voltage">Voltage:</span> <strong id="voltage" style="color:white;">--</strong> V</span>
+        <span><span data-i18n="lbl_current">Current:</span> <strong id="current" style="color:white;">--</strong> A</span>
       </div>
     </div>
     
     <!-- Health Gauge -->
     <div class="card" style="align-items: center;" data-id="card-health">
-      <h3>Battery Health (FCC/Design)</h3>
+      <h3 data-i18n="card_health">Battery Health (FCC/Design)</h3>
       <div class="gauge-container">
         <div class="gauge-bg"></div>
         <div id="healthGauge" class="gauge-fill"></div>
@@ -491,7 +501,7 @@
         </div>
       </div>
       <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 5px;">
-        Cycles: <strong id="cycles" style="color: white;">--</strong> | Temp: <strong id="temperature" style="color: white;">--</strong> °C
+        <span data-i18n="lbl_cycles">Cycles:</span> <strong id="cycles" style="color: white;">--</strong> | <span data-i18n="lbl_temp">Temp:</span> <strong id="temperature" style="color: white;">--</strong> °C
       </div>
     </div>
 
@@ -532,23 +542,23 @@
 
     <!-- Cells Breakdown -->
     <div class="card" data-id="card-cells">
-      <h3>Individual Cells <span id="imbalanceBadge" class="status-badge">--</span></h3>
+      <h3><span data-i18n="card_cells">Individual Cells</span> <span id="imbalanceBadge" class="status-badge">--</span></h3>
       <div id="cellsContainer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-        <div style="color: var(--text-muted); text-align: center;">Waiting for data...</div>
+        <div style="color: var(--text-muted); text-align: center;" data-i18n="lbl_waiting_data">Waiting for data...</div>
       </div>
     </div>
 
     <!-- RSI Panel -->
     <div class="card" data-id="card-rsi">
-      <h3 style="display:flex; align-items:center;">Resistencia Interna <button id="btnCalcRSI" class="btn-outline" style="margin-left:auto; padding:2px 8px; font-size:0.7rem;">CALCULAR RSI</button></h3>
+      <h3 style="display:flex; align-items:center;"><span data-i18n="card_rsi">Resistencia Interna</span> <button id="btnCalcRSI" class="btn-outline" style="margin-left:auto; padding:2px 8px; font-size:0.7rem;" data-i18n="btn_calc_rsi">CALCULAR RSI</button></h3>
       <div id="rsiCardContainer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-        <div style="color: var(--text-muted); text-align: center; margin-top: 1rem;">Pulse CALCULAR RSI para iniciar la medición.</div>
+        <div style="color: var(--text-muted); text-align: center; margin-top: 1rem;" data-i18n="lbl_rsi_desc">Pulse CALCULAR RSI para iniciar la medición.</div>
       </div>
     </div>
 
     <!-- Individual Cells History Chart -->
     <div class="card full-width" data-id="card-cells-history">
-      <h3>Individual Cells History</h3>
+      <h3 data-i18n="card_history">Individual Cells History</h3>
       <div style="width: 100%; height: 250px; margin-bottom: 1rem;">
         <canvas id="cellsChart"></canvas>
       </div>
@@ -572,20 +582,20 @@
     <!-- Live Chart -->
     <div class="card full-width" data-id="card-telemetry">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; gap: 1rem;">
-        <h3>Live Telemetry</h3>
+        <h3 data-i18n="card_telemetry">Live Telemetry</h3>
         <div style="display: flex; gap: 1.5rem; background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Voltage</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;" data-i18n="lbl_voltage">Voltage</span>
             <div style="font-size: 1.25rem; font-weight: bold; color: #00d2ff;"><span id="chartVoltage">--</span> V</div>
           </div>
           <div style="border-left: 1px solid rgba(255,255,255,0.1);"></div>
           <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Current</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;" data-i18n="lbl_current">Current</span>
             <div style="font-size: 1.25rem; font-weight: bold; color: #eab308;"><span id="chartCurrent">--</span> A</div>
           </div>
           <div style="border-left: 1px solid rgba(255,255,255,0.1);"></div>
           <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Power</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;" data-i18n="lbl_power">Power</span>
             <div style="font-size: 1.25rem; font-weight: bold; color: #4ade80;"><span id="chartPower">--</span> W</div>
           </div>
         </div>
@@ -720,10 +730,15 @@
     let sessionData = [];
     let currentSerial = "UNKNOWN";
     let logDirHandle = null;
+    let loggingState = 'stopped'; // 'stopped', 'running', 'paused'
 
     // UI Elements
     const connectBtn = document.getElementById('connectBtn');
     const setLogDirBtn = document.getElementById('setLogDirBtn');
+    const startLogBtn = document.getElementById('startLogBtn');
+    const pauseLogBtn = document.getElementById('pauseLogBtn');
+    const stopLogBtn = document.getElementById('stopLogBtn');
+    const langSelect = document.getElementById('langSelect');
     const reportBtn = document.getElementById('reportBtn');
     const statusBadge = document.getElementById('statusBadge');
     const expertModeBtn = document.getElementById('expertModeBtn');
@@ -855,39 +870,7 @@
       });
     }
 
-    const editLayoutBtn = document.getElementById('editLayoutBtn');
-    editLayoutBtn.addEventListener('click', () => {
-      isEditingLayout = !isEditingLayout;
-      const cards = document.querySelectorAll('.dashboard > .card');
-      
-      if (isEditingLayout) {
-        editLayoutBtn.textContent = '💾 Save Layout';
-        editLayoutBtn.classList.remove('btn-outline');
-        editLayoutBtn.classList.add('btn-active');
-        if (sortableInstance) sortableInstance.option('disabled', false);
-        
-        cards.forEach(card => {
-          card.style.border = '2px dashed var(--primary)';
-          card.style.cursor = 'move';
-        });
-      } else {
-        editLayoutBtn.textContent = '🛠️ Edit Layout';
-        editLayoutBtn.classList.remove('btn-active');
-        editLayoutBtn.classList.add('btn-outline');
-        
-        // Save order
-        const currentCards = Array.from(document.querySelectorAll('.dashboard > .card'));
-        cardOrder = currentCards.map(c => c.getAttribute('data-id'));
-        localStorage.setItem('dashboardLayout', JSON.stringify(cardOrder));
-        if (sortableInstance) sortableInstance.option('disabled', true);
-        
-        cards.forEach(card => {
-          card.style.border = '';
-          card.style.cursor = '';
-        });
-        alert("Layout order saved successfully!");
-      }
-    });
+
 
     let dragSrcEl = null;
 
@@ -933,21 +916,80 @@
     // Call layout restoring immediately
     initLayout();
 
+    // --- I18N Language Logic ---
+    function applyLanguage(lang) {
+      if (!window.LANG_DICT || !window.LANG_DICT[lang]) return;
+      const dict = window.LANG_DICT[lang].strings;
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.textContent = dict[key];
+        }
+      });
+      
+      // Update folder selection button text based on state if selected
+      if (logDirHandle) {
+        setLogDirBtn.textContent = '📁 ' + (lang === 'es' ? 'Carpeta Seleccionada' : 'Folder Selected');
+      }
+    }
+
+    langSelect.addEventListener('change', (e) => {
+      applyLanguage(e.target.value);
+    });
+
+    // Call it initially
+    applyLanguage(langSelect.value);
+
     // --- File System Access API for Logging ---
+    function updateLoggingUI() {
+      if (!logDirHandle) {
+        startLogBtn.disabled = true;
+        pauseLogBtn.disabled = true;
+        stopLogBtn.disabled = true;
+      } else {
+        startLogBtn.disabled = (loggingState === 'running');
+        pauseLogBtn.disabled = (loggingState === 'stopped' || loggingState === 'paused');
+        stopLogBtn.disabled = (loggingState === 'stopped');
+      }
+      startLogBtn.style.opacity = startLogBtn.disabled ? "0.5" : "1";
+      pauseLogBtn.style.opacity = pauseLogBtn.disabled ? "0.5" : "1";
+      stopLogBtn.style.opacity = stopLogBtn.disabled ? "0.5" : "1";
+    }
+    
+    // Initial UI state
+    updateLoggingUI();
+
+    startLogBtn.addEventListener('click', () => {
+      loggingState = 'running';
+      updateLoggingUI();
+    });
+    
+    pauseLogBtn.addEventListener('click', () => {
+      loggingState = 'paused';
+      updateLoggingUI();
+    });
+    
+    stopLogBtn.addEventListener('click', () => {
+      loggingState = 'stopped';
+      updateLoggingUI();
+    });
+
     setLogDirBtn.addEventListener('click', async () => {
       try {
         logDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-        setLogDirBtn.textContent = '📁 Logging Folder Selected';
+        setLogDirBtn.textContent = '📁 ' + (langSelect.value === 'es' ? 'Carpeta Seleccionada' : 'Folder Selected');
         setLogDirBtn.classList.add('btn-active');
         await loadPinouts();
-        alert("Directory selected! Future incoming data will be saved here automatically, and local pinouts have been loaded.");
+        updateLoggingUI();
+        alert(langSelect.value === 'es' ? "Directorio seleccionado. Ahora puedes iniciar el registro." : "Directory selected! You can now use the Start button to log data.");
       } catch (e) {
         console.error("User cancelled or API not supported", e);
       }
     });
 
     async function writeLogLine(data) {
-      if(!logDirHandle) return; 
+      if(!logDirHandle || loggingState !== 'running') return; 
       try {
         const serial = data.SerialNumber || "UNKNOWN";
         const filename = `log_${serial}.csv`;
