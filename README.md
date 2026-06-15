@@ -23,7 +23,7 @@ La mayoría de las baterías de laptop utilizan una interfaz estándar SMBus/I2C
 
 ##  Aplicación Web para el Taller (¡Sin Instalación!)
 
-Hemos incluido una **Aplicación Web** moderna y hermosa que se conecta directamente a tu ESP8266 vía USB (usando la API Web Serial). ¡No necesitas pantallas adicionales ni configurar WiFi!
+He incluido una **Aplicación Web** moderna y hermosa que se conecta directamente a tu ESP8266 vía USB (usando la API Web Serial). ¡No necesitas pantallas adicionales ni configurar WiFi!
 
 ### Cómo usarla:
 1. Abre el sketch `examples/WebSerial/WebSerial.ino` en Arduino IDE y compílalo/súbelo a tu ESP8266.
