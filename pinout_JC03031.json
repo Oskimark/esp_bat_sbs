@@ -1,0 +1,11 @@
+{
+  "model": "JC03031",
+  "pins": [
+    "VCC",
+    "SCL",
+    "SDA",
+    "NC",
+    "GND",
+    "GND"
+  ]
+}

@@ -6,37 +6,33 @@
   <title>Smart Battery Analyzer Pro</title>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="bq4050_commands.js"></script>
   <!-- Sortable.js -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   
   <style>
-    .sortable-ghost {
-      opacity: 0.4;
-      background: var(--card-bg);
-      border: 2px dashed var(--primary);
-    }
     :root {
-      --primary: #00d2ff;
-      --secondary: #3a7bd5;
-      --bg: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --danger: #ef4444;
-      --warning: #eab308;
-      --success: #4ade80;
+      --primary: #ffffff;
+      --secondary: #dddddd;
+      --bg: #050505;
+      --card-bg: #0a0a0a;
+      --text: #eeeeee;
+      --text-muted: #888888;
+      --danger: #ff4444;
+      --warning: #ffcc00;
+      --success: #00cc66;
+      --border: #333333;
     }
     
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Consolas', 'Courier New', monospace;
     }
     
     body {
       background: var(--bg);
-      background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -46,87 +42,83 @@
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 2rem;
+      font-weight: normal;
       margin-bottom: 0.5rem;
-      background: -webkit-linear-gradient(45deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 2px;
       text-align: center;
+      color: var(--text);
     }
 
     .subtitle {
       color: var(--text-muted);
       margin-bottom: 2rem;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
       text-align: center;
     }
 
     button {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border: none;
-      padding: 10px 24px;
-      border-radius: 999px;
-      color: white;
-      font-weight: 600;
-      font-size: 0.95rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      color: var(--text);
+      text-transform: uppercase;
+      font-size: 0.85rem;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
-      transition: all 0.3s ease;
+      transition: background 0.1s, color 0.1s;
     }
 
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4);
+      background: var(--text);
+      color: var(--bg);
     }
 
     .btn-outline {
-      background: transparent;
-      border: 2px solid var(--primary);
-      box-shadow: none;
-    }
-    .btn-outline:hover {
-      background: rgba(0, 210, 255, 0.1);
+      border: 1px solid var(--border);
     }
     
     .btn-active {
-      background: var(--success);
-      border-color: var(--success);
+      background: var(--text);
+      color: var(--bg);
     }
 
     .dashboard {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
       width: 100%;
       max-width: 1300px;
     }
 
     .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
+      background: var(--bg);
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      transition: transform 0.3s ease;
     }
 
     .card h3 {
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       margin-bottom: 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-bottom: 1px dotted var(--border);
+      padding-bottom: 0.5rem;
     }
 
     .card .value {
       font-size: 2rem;
-      font-weight: 700;
-      color: var(--primary);
+      font-weight: normal;
+      color: var(--text);
       display: flex;
       align-items: baseline;
       gap: 0.5rem;
@@ -135,26 +127,24 @@
     .card .unit {
       font-size: 1rem;
       color: var(--text-muted);
-      font-weight: 400;
     }
 
     .status-badge {
       display: inline-block;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      background: rgba(34, 197, 94, 0.2);
+      padding: 2px 8px;
+      border: 1px solid var(--success);
       color: var(--success);
+      font-size: 0.75rem;
+      text-transform: uppercase;
       margin-left: auto;
     }
     
     .status-badge.offline {
-      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--danger);
       color: var(--danger);
     }
     .status-badge.warning {
-      background: rgba(234, 179, 8, 0.2);
+      border-color: var(--warning);
       color: var(--warning);
     }
 
@@ -164,29 +154,26 @@
     
     /* Battery Graphic */
     .battery-graphic {
-      width: 50px;
+      width: 60px;
       height: 24px;
-      border: 2px solid var(--text-muted);
-      border-radius: 4px;
+      border: 1px solid var(--text-muted);
       position: relative;
       padding: 2px;
     }
     .battery-graphic::after {
       content: '';
       position: absolute;
-      right: -5px;
-      top: 4px;
-      width: 3px;
-      height: 12px;
+      right: -4px;
+      top: 6px;
+      width: 2px;
+      height: 10px;
       background: var(--text-muted);
-      border-radius: 0 2px 2px 0;
     }
     .battery-level {
       height: 100%;
-      background: var(--success);
-      border-radius: 1px;
+      background: var(--text);
       width: 0%;
-      transition: width 0.5s ease, background-color 0.5s ease;
+      transition: width 0.5s ease;
     }
 
     /* Gauge */
@@ -202,7 +189,7 @@
       width: 140px;
       height: 140px;
       border-radius: 50%;
-      background: #334155;
+      background: var(--border);
       top: 0;
       left: 0;
     }
@@ -211,7 +198,7 @@
       width: 140px;
       height: 140px;
       border-radius: 50%;
-      background: conic-gradient(var(--danger) 0%, var(--warning) 25%, var(--success) 50%, transparent 50%);
+      background: conic-gradient(var(--text) 0%, var(--text) 50%, transparent 50%);
       top: 0;
       left: 0;
       transform: rotate(-90deg);
@@ -219,12 +206,12 @@
     }
     .gauge-mask {
       position: absolute;
-      width: 110px;
-      height: 110px;
+      width: 138px;
+      height: 138px;
       border-radius: 50%;
-      background: var(--card-bg);
-      top: 15px;
-      left: 15px;
+      background: var(--bg);
+      top: 1px;
+      left: 1px;
       display: flex;
       justify-content: center;
       padding-top: 15px;
@@ -234,9 +221,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.8rem;
-      padding-bottom: 0.8rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px dotted var(--border);
     }
     .cell-row:last-child {
       border-bottom: none;
@@ -253,28 +240,29 @@
       font-size: 0.85rem;
       color: var(--text-muted);
       margin-bottom: 0.3rem;
+      text-transform: uppercase;
     }
     .form-control {
       width: 100%;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      padding: 10px;
-      border-radius: 6px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px;
       outline: none;
+      font-family: inherit;
     }
     .form-control:focus {
-      border-color: var(--primary);
+      border-color: var(--text);
     }
 
     /* Raw Data Section */
     .raw-data {
-      font-family: 'Courier New', Courier, monospace;
+      font-family: 'Consolas', 'Courier New', monospace;
       font-size: 0.85rem;
-      color: #a7f3d0;
-      background: rgba(0,0,0,0.4);
+      color: var(--text-muted);
+      background: var(--card-bg);
       padding: 1rem;
-      border-radius: 8px;
+      border: 1px solid var(--border);
       white-space: pre-wrap;
       overflow-x: auto;
       max-height: 400px;
@@ -290,9 +278,8 @@
       }
       .card {
         background: white !important;
-        border: 1px solid #ccc !important;
+        border: 1px solid #000 !important;
         break-inside: avoid;
-        box-shadow: none !important;
       }
       h1, h3, .subtitle, .card .value, .card .unit {
         color: black !important;
@@ -301,96 +288,163 @@
       button {
         display: none !important;
       }
+      .dashboard { border: none !important; background: transparent !important; }
       .gauge-mask { background: white !important; }
-      .raw-data { background: #f1f1f1 !important; color: black !important; border: 1px solid #ccc; }
+      .raw-data { background: #fff !important; color: black !important; border: 1px solid #000; }
     }
     
     /* Interactive Pinout styles */
     .interactive-pin {
       width: 32px;
       height: 75px;
-      border-radius: 6px;
+      border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
       font-size: 0.75rem;
-      color: white;
+      color: var(--text-muted);
       padding: 6px 0;
       cursor: pointer;
       position: relative;
-      font-weight: bold;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      font-weight: normal;
+      transition: all 0.1s ease;
       user-select: none;
+      background: var(--card-bg);
     }
     .interactive-pin:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 12px rgba(0,210,255,0.3);
-      filter: brightness(1.2);
+      border-color: var(--text);
+      color: var(--text);
     }
     .interactive-pin.active {
-      outline: 2px solid var(--primary);
-      outline-offset: 2px;
+      border: 1px solid var(--text);
+      color: var(--text);
+      background: #111;
     }
     .pin-popover-btn {
-      border: none;
+      border: 1px solid var(--border);
+      background: transparent;
       padding: 6px 10px;
-      border-radius: 4px;
-      color: white;
-      font-weight: bold;
+      color: var(--text);
       font-size: 0.75rem;
       cursor: pointer;
-      box-shadow: none;
-      transition: transform 0.1s;
+      transition: background 0.1s;
     }
     .pin-popover-btn:hover {
-      transform: scale(1.05);
+      background: var(--text);
+      color: var(--bg);
     }
     
     /* Grid style for Raw Device Info */
     .info-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
       margin-top: 1rem;
     }
     .info-group-card {
-      background: rgba(15, 23, 42, 0.4);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 12px;
+      background: var(--bg);
       padding: 1rem;
     }
     .info-group-card h4 {
       font-size: 0.85rem;
-      color: var(--primary);
+      color: var(--text);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 0.75rem;
-      border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+      border-bottom: 1px dotted var(--border);
       padding-bottom: 0.25rem;
     }
     .info-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
+      padding: 4px 0;
       font-size: 0.85rem;
-    }
-    .info-row:last-child {
-      border-bottom: none;
     }
     .info-label {
       color: var(--text-muted);
     }
     .info-val {
-      font-weight: 600;
-      color: #fff;
+      color: var(--text);
+    }
+  
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 10000; display: flex; justify-content: center; align-items: flex-start;
+      padding-top: 5vh; overflow-y: auto;
+    }
+    .modal-content {
+      background: var(--bg); border: 1px solid var(--border);
+      width: 90%; max-width: 1200px; padding: 2rem;
+      margin-bottom: 5vh;
+    }
+    .modal-close {
+      float: right; font-size: 1.5rem; cursor: pointer; color: var(--text); background: none; border: none; padding: 0; font-family: 'Consolas', monospace;
+    }
+    .modal-close:hover { background: transparent; color: var(--danger); }
+    .type-sbs { border: 1px solid var(--text-muted); padding: 2px 6px; font-size: 0.7rem; }
+    .type-mac { border: 1px solid var(--text); padding: 2px 6px; font-size: 0.7rem; }
+    .bits-container { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.75rem; margin-top: 5px; }
+    .bit-tag { border: 1px solid var(--border); padding: 2px 6px; color: var(--text-muted); }
+    .bit-tag.active { border-color: var(--text); color: var(--text); }
+    #commandsTable { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    #commandsTable th, #commandsTable td { padding: 10px; border-bottom: 1px dotted var(--border); text-align: left; }
+    #commandsTable th { color: var(--text-muted); font-weight: normal; text-transform: uppercase; }
+    .action-container { display: flex; gap: 8px; align-items: center; }
+
+    /* GLASS THEME OVERRIDES */
+    body.theme-glass {
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --primary: #00d2ff;
+      --secondary: #3a7bd5;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    body.theme-glass .card {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    body.theme-glass .btn, body.theme-glass .btn-outline, body.theme-glass select {
+      border-radius: 8px;
+      font-family: inherit;
+      text-transform: none;
+    }
+    body.theme-glass .status-badge {
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+    }
+    body.theme-glass .battery-graphic { border-radius: 4px; }
+    body.theme-glass .battery-level { border-radius: 2px; }
+    body.theme-glass .gauge-bg, body.theme-glass .gauge-fill, body.theme-glass .gauge-mask { border-radius: 50%; }
+    body.theme-glass .gauge-mask { border-radius: 50% 50% 0 0; }
+    body.theme-glass .modal-content { border-radius: 16px; }
+    body.theme-glass input[type="text"], body.theme-glass input[type="number"], body.theme-glass input[type="search"], body.theme-glass select {
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
+  <script>
+    // Load theme before parsing the rest of body to avoid flashing
+    const savedTheme = localStorage.getItem('appTheme') || 'minimal';
+    if(savedTheme === 'glass') document.body.classList.add('theme-glass');
+  </script>
 
   <h1>Smart Battery Analyzer Pro</h1>
   <p class="subtitle">Advanced Diagnostics, Live Charting & Logging</p>
@@ -400,6 +454,12 @@
     <button id="setLogDirBtn" class="btn-outline">📁 Select Logging Folder</button>
     <button id="reportBtn" class="btn-outline">📄 Generate Report</button>
     <button id="editLayoutBtn" class="btn-outline">🛠️ Edit Layout</button>
+    <select id="themeSelect" class="btn-outline" style="appearance: none; cursor: pointer; text-align: center; border-color: var(--secondary);">
+      <option value="minimal">Minimal Theme</option>
+      <option value="glass">Glass Theme</option>
+    </select>
+    <button id="expertModeBtn" class="btn-outline" style="border-color: var(--danger); color: var(--danger);">⚠️ Expert Mode</button>
+    <button id="openCmdBtn" class="btn-outline" style="border-color: var(--warning); color: var(--warning);">📚 BQ4050 Commands</button>
     <div id="statusBadge" class="status-badge offline">Offline</div>
   </div>
 
@@ -435,11 +495,54 @@
       </div>
     </div>
 
+    <!-- Advanced Chip Programming (Hidden by default) -->
+    <div class="card" id="expertProgrammingCard" style="display: none; border-color: var(--danger);" data-id="card-expert">
+      <h3 style="color: var(--danger);">⚠️ Chip Programming (Z-Family)</h3>
+      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Advanced tools for BQ40Z551 and similar chips. Use with extreme caution.
+      </div>
+      
+      <div class="form-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <div style="flex: 1;">
+          <label>Unlock Key 1 (Hex)</label>
+          <input type="text" id="unlockKey1" class="form-control" value="0414">
+        </div>
+        <div style="flex: 1;">
+          <label>Unlock Key 2 (Hex)</label>
+          <input type="text" id="unlockKey2" class="form-control" value="3672">
+        </div>
+      </div>
+      <button id="unsealBtn" style="width: 100%; margin-bottom: 1rem; background: var(--danger); color: white;">🔓 Unseal Chip</button>
+      
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <button id="resetLifetimeBtn" style="flex: 1; background: var(--warning); color: black;">🧹 Reset Lifetime Data</button>
+        <button id="sealBtn" style="flex: 1; background: var(--success); color: white;">🔒 Seal Chip</button>
+      </div>
+
+      <hr style="border: 1px solid rgba(255,255,255,0.05); margin: 1rem 0;">
+
+      <div class="form-group" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+        <div style="flex: 2;">
+          <label>Cycle Count</label>
+          <input type="number" id="writeCycleCount" class="form-control" value="0" min="0" max="65535">
+        </div>
+        <button id="writeCycleBtn" style="flex: 1; background: var(--secondary);">✍️ Write Cycles</button>
+      </div>
+    </div>
+
     <!-- Cells Breakdown -->
     <div class="card" data-id="card-cells">
       <h3>Individual Cells <span id="imbalanceBadge" class="status-badge">--</span></h3>
       <div id="cellsContainer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
         <div style="color: var(--text-muted); text-align: center;">Waiting for data...</div>
+      </div>
+    </div>
+
+    <!-- RSI Panel -->
+    <div class="card" data-id="card-rsi">
+      <h3 style="display:flex; align-items:center;">Resistencia Interna <button id="btnCalcRSI" class="btn-outline" style="margin-left:auto; padding:2px 8px; font-size:0.7rem;">CALCULAR RSI</button></h3>
+      <div id="rsiCardContainer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+        <div style="color: var(--text-muted); text-align: center; margin-top: 1rem;">Pulse CALCULAR RSI para iniciar la medición.</div>
       </div>
     </div>
 
@@ -623,6 +726,8 @@
     const setLogDirBtn = document.getElementById('setLogDirBtn');
     const reportBtn = document.getElementById('reportBtn');
     const statusBadge = document.getElementById('statusBadge');
+    const expertModeBtn = document.getElementById('expertModeBtn');
+    const expertCard = document.getElementById('expertProgrammingCard');
 
     // Chart.js Setup
     const ctx = document.getElementById('liveChart').getContext('2d');
@@ -716,13 +821,23 @@
 
     // Draggable Layout Setup
     let isEditingLayout = false;
-    let cardOrder = ["card-soc", "card-health", "card-cells", "card-cells-history", "card-telemetry", "card-guide", "card-builder", "card-diagnostics"];
+    let cardOrder = ["card-soc", "card-health", "card-cells", "card-rsi", "card-cells-history", "card-telemetry", "card-guide", "card-builder", "card-diagnostics"];
 
     function initLayout() {
       const savedLayout = localStorage.getItem('dashboardLayout');
       if (savedLayout) {
         try {
           cardOrder = JSON.parse(savedLayout);
+          // Auto-inject card-rsi if it's missing from old layout saves
+          if (!cardOrder.includes("card-rsi")) {
+            const cellsIdx = cardOrder.indexOf("card-cells");
+            if (cellsIdx !== -1) {
+              cardOrder.splice(cellsIdx + 1, 0, "card-rsi");
+            } else {
+              cardOrder.push("card-rsi");
+            }
+            localStorage.setItem('dashboardLayout', JSON.stringify(cardOrder));
+          }
         } catch(e) {}
       }
       applyLayoutOrder();
@@ -749,16 +864,11 @@
         editLayoutBtn.textContent = '💾 Save Layout';
         editLayoutBtn.classList.remove('btn-outline');
         editLayoutBtn.classList.add('btn-active');
+        if (sortableInstance) sortableInstance.option('disabled', false);
         
         cards.forEach(card => {
-          card.setAttribute('draggable', 'true');
           card.style.border = '2px dashed var(--primary)';
           card.style.cursor = 'move';
-          
-          card.addEventListener('dragstart', handleDragStart);
-          card.addEventListener('dragover', handleDragOver);
-          card.addEventListener('drop', handleDrop);
-          card.addEventListener('dragend', handleDragEnd);
         });
       } else {
         editLayoutBtn.textContent = '🛠️ Edit Layout';
@@ -769,16 +879,11 @@
         const currentCards = Array.from(document.querySelectorAll('.dashboard > .card'));
         cardOrder = currentCards.map(c => c.getAttribute('data-id'));
         localStorage.setItem('dashboardLayout', JSON.stringify(cardOrder));
+        if (sortableInstance) sortableInstance.option('disabled', true);
         
         cards.forEach(card => {
-          card.removeAttribute('draggable');
           card.style.border = '';
           card.style.cursor = '';
-          
-          card.removeEventListener('dragstart', handleDragStart);
-          card.removeEventListener('dragover', handleDragOver);
-          card.removeEventListener('drop', handleDrop);
-          card.removeEventListener('dragend', handleDragEnd);
         });
         alert("Layout order saved successfully!");
       }
@@ -1057,7 +1162,7 @@
           if (data.model && Array.isArray(data.pins)) {
             document.getElementById('pinoutModel').value = data.model;
             document.getElementById('pinCountInput').value = data.pins.length;
-            activePinout = [...data.pins];
+            activePinout = data.pins.slice();
             renderPins();
             alert(`Loaded pinout file for model: ${data.model}`);
           } else {
@@ -1073,6 +1178,56 @@
     // Initialize Pinout Builder
     renderPins();
     loadPinouts();
+
+    // --- Advanced Chip Programming Logic ---
+    expertModeBtn.addEventListener('click', () => {
+      if (expertCard.style.display === 'none') {
+        expertCard.style.display = 'block';
+        expertModeBtn.classList.add('btn-active');
+        expertModeBtn.textContent = '⚠️ Expert Mode (ON)';
+      } else {
+        expertCard.style.display = 'none';
+        expertModeBtn.classList.remove('btn-active');
+        expertModeBtn.textContent = '⚠️ Expert Mode';
+      }
+    });
+
+    async function sendSerialCommand(cmdStr) {
+      if (!writer) {
+        alert("Not connected to serial port.");
+        return;
+      }
+      try {
+        const cmd = new TextEncoder().encode(cmdStr + '\n');
+        await writer.write(cmd);
+        console.log("Sent command:", cmdStr);
+      } catch (err) {
+        console.error("Error sending command:", err);
+        alert("Failed to send command.");
+      }
+    }
+
+    document.getElementById('unsealBtn').addEventListener('click', () => {
+      if(!confirm("Are you sure you want to Unseal the chip?")) return;
+      const k1 = document.getElementById('unlockKey1').value;
+      const k2 = document.getElementById('unlockKey2').value;
+      sendSerialCommand(`U${k1},${k2}`);
+    });
+    
+    document.getElementById('resetLifetimeBtn').addEventListener('click', () => {
+      if(!confirm("Are you sure you want to Reset Lifetime Data?")) return;
+      sendSerialCommand('R');
+    });
+    
+    document.getElementById('sealBtn').addEventListener('click', () => {
+      sendSerialCommand('S');
+    });
+    
+    document.getElementById('writeCycleBtn').addEventListener('click', () => {
+      const cycles = document.getElementById('writeCycleCount').value;
+      if(!confirm(`Are you sure you want to set Cycle Count to ${cycles}?`)) return;
+      sendSerialCommand(`W${cycles}`);
+    });
 
     // --- Web Serial Connection ---
     connectBtn.addEventListener('click', async () => {
@@ -1195,8 +1350,178 @@
 
     document.getElementById('rawSearch').addEventListener('input', renderElegantData);
 
-    // --- Process Data & UI ---
+    // BQ4050 Command Modal Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('openCmdBtn').addEventListener('click', () => {
+        document.getElementById('commandsModal').style.display = 'flex';
+        renderCmdTable();
+      });
+      document.getElementById('closeCmdBtn').addEventListener('click', () => {
+        document.getElementById('commandsModal').style.display = 'none';
+      });
+    });
+
+
+    function renderCmdTable(filter = "") {
+      const tbody = document.getElementById('cmdTableBody');
+      tbody.innerHTML = "";
+      const f = filter.toLowerCase();
+      
+      BQ4050_COMMANDS.forEach(cmd => {
+        if (f && !cmd.name.toLowerCase().includes(f) && !cmd.hex.toLowerCase().includes(f)) return;
+        const tr = document.createElement('tr');
+        tr.id = "row_" + cmd.hex.replace(',','_');
+        
+        let typeClass = cmd.type === 'SBS' ? 'type-sbs' : 'type-mac';
+        let bitsHtml = '';
+        if (cmd.bits) {
+          bitsHtml = '<div class="bits-container" id="bits_' + cmd.hex + '">';
+          for (let b in cmd.bits) {
+            let tooltip = (cmd.bitDescs && cmd.bitDescs[b]) ? cmd.bitDescs[b] : '';
+            bitsHtml += `<span class="bit-tag" data-bit="${b}" title="${tooltip}">${cmd.bits[b]}</span>`;
+          }
+          bitsHtml += '</div>';
+        }
+
+        let actionHtml = '';
+        if (cmd.access.includes('W')) {
+          if (cmd.seq === 2) {
+             const keys = cmd.hex.split(',');
+             const key1 = keys[0].replace('0x','');
+             const key2 = keys[1] ? keys[1].replace('0x','') : key1;
+             actionHtml += `<button class="btn-danger" style="padding: 4px 8px; font-size:0.75rem;" onclick="sendSerialCommand('U${key1},${key2}')">Send Seq</button>`;
+          } else if (cmd.action === 'Write') {
+             actionHtml += `
+                 <input type="text" id="val_${cmd.hex}" placeholder="Val" style="width:50px; padding:2px; font-size:0.75rem; background:#222; color:white; border:1px solid #444;">
+                 <button class="btn-outline" style="padding: 4px 8px; font-size:0.75rem;" onclick="sendSerialCommand('W' + document.getElementById('val_${cmd.hex}').value)">Write</button>
+             `;
+          } else if (cmd.type === 'MAC') {
+             actionHtml += `<button class="btn-outline" style="padding: 4px 8px; font-size:0.75rem;" onclick="sendSerialCommand('M${cmd.hex.replace('0x','')}')">Send</button>`;
+          }
+        }
+        if (cmd.access.includes('R') && cmd.seq !== 2) {
+          const readCmd = cmd.type === 'SBS' ? 'Q' : 'P';
+          actionHtml += ` <button style="padding: 4px 8px; font-size:0.75rem; background: var(--secondary);" onclick="sendSerialCommand('${readCmd}${cmd.hex.replace('0x','')}')">Read</button>`;
+        }
+
+        tr.innerHTML = `
+          <td style="font-family: monospace; color: var(--primary);">${cmd.hex}</td>
+          <td><span class="type-badge ${typeClass}">${cmd.type}</span></td>
+          <td><strong>${cmd.name}</strong><br><span style="font-size: 0.8rem; color: var(--text-muted);">${cmd.desc}</span>${bitsHtml}</td>
+          <td style="font-size: 0.8rem;">${cmd.access}</td>
+          <td style="font-size: 0.8rem; color: var(--warning);">${cmd.format}</td>
+          <td><div class="action-container">${actionHtml}</div></td>
+          <td id="res_${cmd.hex}" style="font-weight: bold; font-family: monospace;">-</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('cmdSearchInput').addEventListener('input', (e) => renderCmdTable(e.target.value));
+      
+      const themeSelect = document.getElementById('themeSelect');
+      themeSelect.value = localStorage.getItem('appTheme') || 'minimal';
+      themeSelect.addEventListener('change', (e) => {
+        const theme = e.target.value;
+        if (theme === 'glass') document.body.classList.add('theme-glass');
+        else document.body.classList.remove('theme-glass');
+        localStorage.setItem('appTheme', theme);
+      });
+    });
+
+
+
+
+    function handleCommandResponse(data) {
+       console.log("Command response:", data);
+       const cell = document.getElementById("res_" + data.cmd);
+       if (cell) {
+         let valStr = data.hexVal !== undefined ? data.hexVal : data.val;
+         const cmdDef = BQ4050_COMMANDS.find(c => c.hex.toLowerCase() === data.cmd.toLowerCase());
+         
+         // Temperature: convert 0.1K to Celsius
+         if (cmdDef && cmdDef.format === "0.1\u00b0K" && data.val !== undefined) {
+           const celsius = (parseInt(data.val) / 10.0 - 273.15).toFixed(1);
+           valStr = celsius + " \u00b0C";
+         }
+         // Current: show signed value
+         if (cmdDef && cmdDef.format === "mA" && data.val !== undefined) {
+           let v = parseInt(data.val);
+           if (v > 32767) v -= 65536;
+           valStr = v + " mA";
+         }
+         
+         cell.textContent = valStr;
+         cell.style.color = "var(--success)";
+         // Highlight the row briefly
+         const row = document.getElementById("row_" + data.cmd.replace(",","_"));
+         if (row) { row.style.background = "rgba(74, 222, 128, 0.1)"; setTimeout(() => row.style.background = "", 800); }
+         setTimeout(() => cell.style.color = "inherit", 1000);
+         
+         // BatteryMode special descriptions
+         if (cmdDef && cmdDef.hex === "0x03" && data.val !== undefined) {
+           const v = parseInt(data.val);
+           let modeDescs = [];
+           if (v & (1<<15)) modeDescs.push("CAPM: Capacity in 10mWh"); else modeDescs.push("CAPM: Capacity in mAh");
+           if (v & (1<<14)) modeDescs.push("CHGM: Charging disabled by host"); 
+           if (v & (1<<13)) modeDescs.push("AM: Alarm broadcasts disabled"); else modeDescs.push("AM: Alarm broadcasts enabled");
+           if (v & (1<<9)) modeDescs.push("PB: Primary battery role"); else modeDescs.push("PB: Secondary battery");
+           if (v & (1<<8)) modeDescs.push("CC: Internal charge controller"); 
+           if (v & (1<<7)) modeDescs.push("CF: Condition flag set");
+           if (v & (1<<1)) modeDescs.push("PBS: Primary battery support");
+           if (v & (1<<0)) modeDescs.push("ICC: Internal charge control enabled");
+           const descSpan = document.createElement("div");
+           descSpan.style.cssText = "font-size:0.7rem; color: var(--text-muted); margin-top:4px;";
+           descSpan.textContent = modeDescs.join(" | ");
+           cell.appendChild(descSpan);
+         }
+         
+         
+         // Parse bits if applicable
+          if (cmdDef && cmdDef.bits && (data.val !== undefined || data.hexVal !== undefined)) {
+            const bitsDiv = document.getElementById("bits_" + cmdDef.hex);
+            if (bitsDiv) {
+              const valNum = data.hexVal !== undefined ? parseInt(data.hexVal, 16) : parseInt(data.val);
+             Array.from(bitsDiv.children).forEach(span => {
+               const bitPos = parseInt(span.getAttribute('data-bit'));
+               if ((valNum & (1 << bitPos)) !== 0) {
+                 span.classList.add('active');
+               } else {
+                 span.classList.remove('active');
+               }
+             });
+           }
+         } else if (cmdDef && cmdDef.bits && data.hexVal !== undefined) {
+           const hexStr = data.hexVal.replace('0x', '');
+           if (hexStr.length >= 12) {
+             const b0 = parseInt(hexStr.substr(4,2), 16);
+             const b1 = parseInt(hexStr.substr(6,2), 16);
+             const b2 = parseInt(hexStr.substr(8,2), 16);
+             const b3 = parseInt(hexStr.substr(10,2), 16);
+             const valNum = (b3<<24) | (b2<<16) | (b1<<8) | b0;
+             const bitsDiv = document.getElementById("bits_" + cmdDef.hex);
+             if (bitsDiv) {
+               Array.from(bitsDiv.children).forEach(span => {
+                 const bitPos = parseInt(span.getAttribute('data-bit'));
+                 if ((valNum & (1 << bitPos)) !== 0) {
+                   span.classList.add('active');
+                 } else {
+                   span.classList.remove('active');
+                 }
+               });
+             }
+             cell.textContent = "0x" + valNum.toString(16).toUpperCase();
+           }
+         }
+       }
+    }
+
+
+
+        // --- Process Data & UI ---
     function processData(data) {
+      if (data.cmd !== undefined) { handleCommandResponse(data); return; }
+
       data.timestamp = new Date().toLocaleTimeString();
       sessionData.push(data);
       lastData = data;
@@ -1237,6 +1562,14 @@
       const c2 = (data.VoltageCellTwo || 0) / 1000;
       const c3 = (data.VoltageCellThree || 0) / 1000;
       const c4 = (data.VoltageCellFour || 0) / 1000;
+
+      if(!window.autoHiddenCellsChecked) {
+        window.autoHiddenCellsChecked = true;
+        if(c1 === 0) { document.getElementById('chkCell1').checked = false; cellsChart.setDatasetVisibility(0, false); }
+        if(c2 === 0) { document.getElementById('chkCell2').checked = false; cellsChart.setDatasetVisibility(1, false); }
+        if(c3 === 0) { document.getElementById('chkCell3').checked = false; cellsChart.setDatasetVisibility(2, false); }
+        if(c4 === 0) { document.getElementById('chkCell4').checked = false; cellsChart.setDatasetVisibility(3, false); }
+      }
       
       if(cellsChart.data.labels.length > 30) {
         cellsChart.data.labels.shift();
@@ -1302,6 +1635,151 @@
       }
 
       updateCells(data);
+      if(window.rsiState && window.rsiState !== 'idle') {
+        handleRsiState(data);
+      }
+    }
+
+    // --- RSI Logic ---
+    window.rsiState = 'idle';
+    window.rsiSamplesCount = 0;
+    window.RSI_SAMPLES_NEEDED = 4;
+    window.idleData = { current: 0, c1: 0, c2: 0, c3: 0, c4: 0, count: 0 };
+    window.loadData = { current: 0, c1: 0, c2: 0, c3: 0, c4: 0, count: 0 };
+    window.calculatedRSI = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const saved = localStorage.getItem('savedRSI');
+        if(saved) {
+          window.calculatedRSI = JSON.parse(saved);
+          renderRsiCard();
+        }
+      } catch(e) { console.error('Error loading RSI', e); }
+
+      document.getElementById('btnCalcRSI').addEventListener('click', () => {
+        document.getElementById('rsiModal').style.display = 'flex';
+        window.rsiState = 'idle';
+        document.getElementById('rsiStatusText').innerHTML = 'Tenga a mano una resistencia de 150 ohms.<br>Presione Iniciar para comenzar.';
+        document.getElementById('rsiResults').style.display = 'none';
+        document.getElementById('btnStartRSI').style.display = 'inline-block';
+        document.getElementById('btnStartRSI').innerText = 'Iniciar';
+      });
+
+      document.getElementById('btnCloseRSI').addEventListener('click', () => {
+        document.getElementById('rsiModal').style.display = 'none';
+        window.rsiState = 'idle';
+      });
+
+      document.getElementById('btnStartRSI').addEventListener('click', () => {
+        if(window.rsiState === 'idle' || window.rsiState === 'done') {
+          window.rsiState = 'measuring_idle';
+          window.rsiSamplesCount = 0;
+          window.idleData = { current: 0, c1: 0, c2: 0, c3: 0, c4: 0, count: 0 };
+          document.getElementById('rsiStatusText').innerText = 'Calculando promedio en reposo...';
+          document.getElementById('btnStartRSI').style.display = 'none';
+          document.getElementById('rsiResults').style.display = 'none';
+        }
+      });
+    });
+
+    function handleRsiState(data) {
+      if(window.rsiState === 'measuring_idle') {
+        window.idleData.current += data.Current;
+        if(data.VoltageCellOne) window.idleData.c1 += data.VoltageCellOne;
+        if(data.VoltageCellTwo) window.idleData.c2 += data.VoltageCellTwo;
+        if(data.VoltageCellThree) window.idleData.c3 += data.VoltageCellThree;
+        if(data.VoltageCellFour) window.idleData.c4 += data.VoltageCellFour;
+        window.idleData.count++;
+        window.rsiSamplesCount++;
+        
+        if(window.rsiSamplesCount >= window.RSI_SAMPLES_NEEDED) {
+          window.idleData.current /= window.idleData.count;
+          window.idleData.c1 /= window.idleData.count;
+          window.idleData.c2 /= window.idleData.count;
+          window.idleData.c3 /= window.idleData.count;
+          window.idleData.c4 /= window.idleData.count;
+          
+          window.rsiState = 'waiting_load';
+          document.getElementById('rsiStatusText').innerHTML = '<span style="color:var(--warning); font-size:1.1rem;">CONECTE LA RESISTENCIA AHORA</span>';
+        }
+      } 
+      else if(window.rsiState === 'waiting_load') {
+        if(Math.abs(data.Current) > 0.05) {
+          window.rsiState = 'measuring_load';
+          window.rsiSamplesCount = 0;
+          window.loadData = { current: 0, c1: 0, c2: 0, c3: 0, c4: 0, count: 0 };
+          document.getElementById('rsiStatusText').innerHTML = '<span style="color:var(--success);">¡Resistencia detectada!<br>No mueva nada por unos segundos...</span>';
+        }
+      }
+      else if(window.rsiState === 'measuring_load') {
+        window.loadData.current += Math.abs(data.Current);
+        if(data.VoltageCellOne) window.loadData.c1 += data.VoltageCellOne;
+        if(data.VoltageCellTwo) window.loadData.c2 += data.VoltageCellTwo;
+        if(data.VoltageCellThree) window.loadData.c3 += data.VoltageCellThree;
+        if(data.VoltageCellFour) window.loadData.c4 += data.VoltageCellFour;
+        window.loadData.count++;
+        window.rsiSamplesCount++;
+
+        if(window.rsiSamplesCount >= window.RSI_SAMPLES_NEEDED) {
+          window.loadData.current /= window.loadData.count;
+          window.loadData.c1 /= window.loadData.count;
+          window.loadData.c2 /= window.loadData.count;
+          window.loadData.c3 /= window.loadData.count;
+          window.loadData.c4 /= window.loadData.count;
+          
+          window.rsiState = 'done';
+          calculateAndShowRSI();
+        }
+      }
+    }
+
+    function getRsiHealthColor(rsi) {
+      if(rsi < 150) return 'var(--success)';
+      if(rsi <= 250) return 'var(--warning)';
+      return 'var(--danger)';
+    }
+
+    function renderRsiCard() {
+      const container = document.getElementById('rsiCardContainer');
+      if(!window.calculatedRSI || Object.keys(window.calculatedRSI).length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 1rem;">Pulse CALCULAR RSI para iniciar la medición.</div>';
+        return;
+      }
+      let htmlStr = '';
+      Object.keys(window.calculatedRSI).sort().forEach(key => {
+        const item = window.calculatedRSI[key];
+        const color = getRsiHealthColor(item.rsi);
+        htmlStr += `<div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dotted var(--border);">
+          <span style="color: var(--text-muted);">${item.name} (Δ ${item.deltaV.toFixed(1)} mV)</span>
+          <span style="color: var(--bg); background: ${color}; font-weight: bold; font-size: 1.1rem; padding: 2px 6px; border-radius: 4px;">${item.rsi.toFixed(0)} mΩ</span>
+        </div>`;
+      });
+      container.innerHTML = htmlStr;
+    }
+
+    function calculateAndShowRSI() {
+      document.getElementById('rsiStatusText').innerHTML = '<span style="color:var(--text);">Cálculo Finalizado. Puede retirar la resistencia y cerrar el asistente.</span>';
+      window.calculatedRSI = {};
+      const cells = [
+        {name: 'Cell 1', idle: window.idleData.c1, load: window.loadData.c1, key: 'c1'},
+        {name: 'Cell 2', idle: window.idleData.c2, load: window.loadData.c2, key: 'c2'},
+        {name: 'Cell 3', idle: window.idleData.c3, load: window.loadData.c3, key: 'c3'},
+        {name: 'Cell 4', idle: window.idleData.c4, load: window.loadData.c4, key: 'c4'}
+      ];
+      cells.forEach(c => {
+        if(c.idle > 0) {
+          const deltaV = c.idle - c.load;
+          const rsi = (deltaV / window.loadData.current) * 1000;
+          window.calculatedRSI[c.key] = { rsi, deltaV, name: c.name };
+        }
+      });
+      
+      localStorage.setItem('savedRSI', JSON.stringify(window.calculatedRSI));
+      renderRsiCard();
+
+      document.getElementById('btnStartRSI').innerText = 'Recalcular';
+      document.getElementById('btnStartRSI').style.display = 'inline-block';
     }
 
     function getLevelColor(pct) {
@@ -1313,10 +1791,10 @@
     function updateCells(data) {
       const container = document.getElementById('cellsContainer');
       const cells = [];
-      if(data.VoltageCellOne > 0) cells.push({ name: 'Cell 1', mv: data.VoltageCellOne });
-      if(data.VoltageCellTwo > 0) cells.push({ name: 'Cell 2', mv: data.VoltageCellTwo });
-      if(data.VoltageCellThree > 0) cells.push({ name: 'Cell 3', mv: data.VoltageCellThree });
-      if(data.VoltageCellFour > 0) cells.push({ name: 'Cell 4', mv: data.VoltageCellFour });
+      if(data.VoltageCellOne > 0) cells.push({ name: 'Cell 1', mv: data.VoltageCellOne, idx: 1 });
+      if(data.VoltageCellTwo > 0) cells.push({ name: 'Cell 2', mv: data.VoltageCellTwo, idx: 2 });
+      if(data.VoltageCellThree > 0) cells.push({ name: 'Cell 3', mv: data.VoltageCellThree, idx: 3 });
+      if(data.VoltageCellFour > 0) cells.push({ name: 'Cell 4', mv: data.VoltageCellFour, idx: 4 });
 
       if(cells.length === 0) {
         container.innerHTML = '<div style="color: var(--text-muted); text-align: center;">No individual cell data reported.</div>';
@@ -1368,12 +1846,13 @@
 
     // --- Dashboard Drag & Drop ---
     const dashboard = document.querySelector('.dashboard');
+    let sortableInstance = null;
     if (dashboard) {
-      Sortable.create(dashboard, {
+      sortableInstance = Sortable.create(dashboard, {
         animation: 150,
         ghostClass: 'sortable-ghost',
+        disabled: true,
         onEnd: function () {
-          // Save layout
           const order = Array.from(dashboard.children).map(c => c.getAttribute('data-id')).filter(id => id);
           localStorage.setItem('dashboardLayout', JSON.stringify(order));
         }
@@ -1404,6 +1883,44 @@
     <button class="pin-popover-btn" style="background: #9ca3af; color: black; border:none; border-radius:4px; padding:6px; cursor:pointer;" onclick="setPinFunc('SP')">SP</button>
     <button class="pin-popover-btn" style="background: #111; color: #aaa; border: 1px solid #444; border-radius:4px; padding:6px; cursor:pointer;" onclick="setPinFunc('GND')">GND</button>
     <button class="pin-popover-btn" style="background: #27272a; color: #ccc; border: 1px dashed #4b5563; border-radius:4px; padding:6px; cursor:pointer;" onclick="setPinFunc('NC')">NC</button>
+  </div>
+
+  <div id="commandsModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <button class="modal-close" id="closeCmdBtn">&times; Close</button>
+      <h2 style="color:var(--primary); margin-bottom:1rem;">BQ4050 Command Reference</h2>
+      <input type="search" id="cmdSearchInput" placeholder="Search commands..." style="width: 300px; padding: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--primary); margin-bottom: 1rem;">
+      <table id="commandsTable">
+        <thead>
+          <tr>
+            <th>Code</th><th>Type</th><th>Name & Description</th><th>Access</th><th>Format</th><th>Actions</th><th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="cmdTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RSI Modal -->
+  <div id="rsiModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="max-width: 500px; text-align: center;">
+      <h2 style="margin-bottom: 1rem;">Cálculo de RSI</h2>
+      <p id="rsiStatusText" style="margin-bottom: 2rem; color: var(--text-muted); min-height: 3rem;">Tenga a mano una resistencia de 150 ohms.<br>Presione Iniciar para comenzar.</p>
+      
+      <div id="rsiResults" style="display:none; margin-bottom: 1rem;">
+        <table id="rsiTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+          <thead>
+            <tr><th style="border-bottom: 1px dotted var(--border); padding-bottom: 5px;">Celda</th><th style="border-bottom: 1px dotted var(--border); padding-bottom: 5px;">Caída (mV)</th><th style="border-bottom: 1px dotted var(--border); padding-bottom: 5px;">RSI (mΩ)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button id="btnStartRSI" class="btn-outline">Iniciar</button>
+        <button id="btnCloseRSI" class="btn-outline" style="color: var(--danger); border-color: var(--danger);">Cerrar</button>
+      </div>
+    </div>
   </div>
 </body>
 </html>

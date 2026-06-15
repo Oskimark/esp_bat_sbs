@@ -104,6 +104,28 @@ void SBS::sbsReadString(char str[], uint8_t command) {
   }
 }
 
+int SBS::sbsReadBlock(uint8_t command, uint8_t* data, uint8_t max_len) {
+  int n = 0;
+  Wire.beginTransmission(smbusAddress);
+  Wire.write(command);
+  if(Wire.endTransmission(false) == 0) {
+    Wire.requestFrom((int)smbusAddress, max_len + 1, (int)true); 
+    if(Wire.available()) {
+      n = Wire.read(); // length byte
+      if(n > max_len) n = max_len;
+      for(int i = 0; i < n; i++) {
+        if(Wire.available()) {
+          data[i] = Wire.read();
+        } else {
+          n = i; 
+          break;
+        }
+      }
+    }
+  }
+  return n;
+}
+
 void SBS::sbsWriteWord(uint8_t command, uint16_t data) {
   Wire.beginTransmission(smbusAddress);
   Wire.write(command);

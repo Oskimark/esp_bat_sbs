@@ -1,5 +1,5 @@
 # SBS_ESP: Sistema de Batería Inteligente para ESP
-
+codigo inicial inspirado fuertemente de https://github.com/teliot/SBS
 Esta librería permite que un ESP8266 (o ESP32) lea datos de baterías compatibles con el estándar "Smart Battery System" (SBS), que normalmente se encuentran en laptops, drones y otros dispositivos portátiles.
 
 ¡Esta versión ha sido fuertemente optimizada para la memoria del microcontrolador y adaptada para uso moderno en el taller!
